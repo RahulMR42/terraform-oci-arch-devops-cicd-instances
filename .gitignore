@@ -4,6 +4,7 @@
 .LSOverride
 .idea
 
+
 # Local .terraform directories
 **/.terraform/*
 
@@ -12,6 +13,7 @@
 *.tfstate.*
 *.zip*
 *.tfvars
+*.out
 
 # terraform lock file
 **/.terraform.lock.hcl

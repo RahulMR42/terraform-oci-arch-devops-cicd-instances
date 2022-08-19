@@ -16,10 +16,10 @@ data "template_cloudinit_config" "cloud_init" {
   }
 }
 
-resource "oci_core_instance" "compute_instance_prod" {
+resource "oci_core_instance" "compute_instance_1" {
   availability_domain = var.availability_domain_name == "" ? data.oci_identity_availability_domains.ADs.availability_domains[0]["name"] : var.availability_domain_name
   compartment_id      = var.compartment_ocid
-  display_name        = var.compute_instance_prod_name
+  display_name        = var.compute_instance_1_name
   shape               = var.instance_shape
   fault_domain        = "FAULT-DOMAIN-1"
   freeform_tags       = {
@@ -60,14 +60,14 @@ resource "oci_core_instance" "compute_instance_prod" {
 }
 
 
-resource "oci_core_instance" "compute_instance_canary" {
+resource "oci_core_instance" "compute_instance_2" {
   availability_domain = var.availability_domain_name == "" ? data.oci_identity_availability_domains.ADs.availability_domains[0]["name"] : var.availability_domain_name
   compartment_id      = var.compartment_ocid
-  display_name        = var.compute_instance_canary_name
+  display_name        = var.compute_instance_2_name
   shape               = var.instance_shape
-  fault_domain        = "FAULT-DOMAIN-1"
+  fault_domain        = "FAULT-DOMAIN-2"
   freeform_tags       = {
-        "environment" = "canary"
+        "environment" = "prod"
   }
 
   dynamic "shape_config" {
