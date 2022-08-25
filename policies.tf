@@ -60,6 +60,7 @@ resource "oci_identity_policy" "devopspolicy" {
     "Allow dynamic-group ${oci_identity_dynamic_group.runcmddynamicgroup.name} to use instance-agent-command-execution-family in compartment id ${var.compartment_ocid}",
    "Allow dynamic-group ${oci_identity_dynamic_group.runcmddynamicgroup.name} to read objects in compartment id ${var.compartment_ocid}",
    "Allow dynamic-group ${oci_identity_dynamic_group.runcmddynamicgroup.name} to manage objects in compartment id ${var.compartment_ocid}",
+    "Allow dynamic-group ${oci_identity_dynamic_group.runcmddynamicgroup.name} to manage all-artifacts in compartment id ${var.compartment_ocid}"
 
   ]
 }
