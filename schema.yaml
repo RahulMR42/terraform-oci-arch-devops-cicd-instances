@@ -1,11 +1,11 @@
 ## Copyright (c) 2022, Oracle and/or its affiliates.
 ## All rights reserved. The Universal Permissive License (UPL), Version 1.0 as shown at http://oss.oracle.com/licenses/upl
 
-title: "Deployment on Compute Instances with Canary strategy by using OCI DevOps services."
-stackDescription: "Deployment on Compute Instances with Canary strategy by using Oracle Cloud Infrastructure DevOps services." 
-description: "Deployment on Compute Instances with Canary strategy by using Oracle Cloud Infrastructure DevOps services."
+title: "Deployment Java Graal Application on Compute Instances with  OCI DevOps services."
+stackDescription: "Deployment Java Graal Application on Compute Instances with  OCI DevOps services."
+description: "Deployment Java Graal Application on Compute Instances with  OCI DevOps services."
 schemaVersion: 1.1.0
-version: "20190404"
+version: "20220922"
 locale: "en"
 
 #################
@@ -16,43 +16,80 @@ variableGroups:
   visible: false
   variables:
   - tenancy_ocid
-  - region
+  - compartment_ocid
   - user_ocid
   - fingerprint
   - private_key_path
-  - network_cidrs
-  - node_pool_boot_volume_size_in_gbs
-  - deploy_pipeline_deploy_pipeline_parameters_items_default_value
-  - deploy_pipeline_deploy_pipeline_parameters_items_description
-  - deploy_pipeline_deploy_pipeline_parameters_items_name
-  - build_pipeline_stage_build_pipeline_stage_predecessor_collection_items_id
+  - region
+  - ssh_public_key
+  - oci_user_name
+  - oci_user_authtoken
+  - app_name
+  - release
+  - project_logging_config_retention_period_in_days
+  - project_description
+  - compute_instance_1_name
+  - compute_instance_2_name
+  - instance_shape
+  - instance_shape_ocpus
+  - instance_shape_memory_in_gbs
+  - instance_os
+  - linux_os_version
+  - availability_domain_name
+  - VCN-CIDR
+  - Subnet-CIDR
+  - repository_name
+  - repository_default_branch
+  - repository_description
+  - repository_repository_type
+  - git_repo
+  - git_repo_name
+  - build_pipeline_description
+  - build_pipeline_display_name
   - build_pipeline_stage_build_pipeline_stage_type
-  - build_pipeline_stage_deliver_artifact_stage_type
-  - build_pipeline_stage_deploy_stage_type
-  - build_pipeline_stage_build_source_collection_items_branch
   - build_pipeline_stage_build_source_collection_items_connection_type
+  - build_pipeline_stage_build_source_collection_items_branch
   - build_pipeline_stage_build_source_collection_items_name
   - build_pipeline_stage_build_spec_file
-  - build_pipeline_stage_deliver_artifact_collection_items_artifact_name
+  - build_pipeline_stage_display_name
   - build_pipeline_stage_image
   - build_pipeline_stage_wait_criteria_wait_duration
   - build_pipeline_stage_wait_criteria_wait_type
-  - deploy_artifact_argument_substitution_mode
-  - deploy_artifact_deploy_artifact_source_deploy_artifact_source_type
-  - deploy_artifact_deploy_artifact_type
-  - repository_repository_type
-  - deploy_artifact_type
-  - deploy_artifact_source_type
-  - deploy_stage_deploy_stage_type
-  - deploy_artifact_source_type
-  - deploy_stage_deploy_stage_type
-  - execute_deployment
-  - release
+  - build_pipeline_stage_stage_execution_timeout_in_seconds
+  - devops_instance_deploy_spec_artifact_name
+  - devops_instance_deploy_spec_path
+  - devops_app_executable_name
+  - devops_app_executable_path
+  - build_pipeline_stage_deliver_artifact_stage_type
+  - deliver_artifact_stage_display_name
+  - loadbalancer_display_name{
+  - loadbalancer_listner_name{
+  - loadbalancer_shape
+  - loadbalancer_maximum_bandwidth_in_mbps
+  - loadbalancer_minimum_bandwidth_in_mbps
+  - loadbalancer_backend_set_name
+  - loadbalancer_backendset_policy
+  - loadbalancer_backendset_port
+  - loadbalancer_backend_port
+  - loadbalancer_listener_port
+  - deploy_pipeline_name
+  - deploy_pipeline_description
+  - build_pipeline_stage_deploy_stage_type
+  - deploy_stage_display_name
+  - deploy_stage_type
+  - deploy_display_name
+  - deploy_description
+  - deploy_failure_count
+  - deploy_backend_port
+  - deploy_batch_count
+  - deploy_batch_delay_in_seconds
+  - build_pipeline_stage_is_pass_all_parameters_enabled
+  - devops_env_prod_displayname
 
 - title: "Required Configuration"
   visible: true  
   variables:
-    - oci_username
+    - oci_user_name
     - oci_user_authtoken
     - availability_domain_name
     - show_advanced
@@ -68,8 +105,7 @@ variableGroups:
 - title: "DevOps Deploy Artifact Configuration"
   visible: true  
   variables:
-    - devops_artifact_name
-    - deploy_artifact_version
+    - devops_instance_deploy_spec_artifact_name
 
 - title: "DevOps Build Pipeline Configuration"
   visible: true  
@@ -83,13 +119,25 @@ variableGroups:
     - repository_name
     - repository_default_branch
     - repository_description
+    - repository_repository_type
     - git_repo
     - git_repo_name
-    - build_pipeline_stage_build_source_collection_items_name 
+    - build_pipeline_description
+    - build_pipeline_display_name
+    - build_pipeline_stage_build_pipeline_stage_type
+    - build_pipeline_stage_build_source_collection_items_connection_type
+    - build_pipeline_stage_build_source_collection_items_branch
+    - build_pipeline_stage_build_source_collection_items_name
+    - build_pipeline_stage_build_spec_file
     - build_pipeline_stage_display_name
-    - build_pipeline_stage_is_pass_all_parameters_enabled
+    - build_pipeline_stage_image
+    - build_pipeline_stage_wait_criteria_wait_duration
+    - build_pipeline_stage_wait_criteria_wait_type
     - build_pipeline_stage_stage_execution_timeout_in_seconds
-    - deploy_stage_display_name
+    - build_pipeline_stage_deliver_artifact_stage_type
+    - build_pipeline_stage_deploy_stage_type
+    - build_pipeline_stage_is_pass_all_parameters_enabled
+
 
 - title: "DevOps Build Pipeline - Deliver Stage Configuration"
   visible: true  
@@ -102,56 +150,46 @@ variableGroups:
     - deploy_stage_display_name
     - deploy_pipeline_description
 
-- title: "DevOps Build Pipeline - Canary Deploy to Instance Stage Configuration"
+- title: "DevOps Build Pipeline -  Deploy to Instance Stage Configuration"
   visible: true  
   variables:
-    - canary_deploy_stage_name
-    - canary_deploy_stage_description
+    - devops_instance_deploy_spec_artifact_name
+    - devops_instance_deploy_spec_path
+    - loadbalancer_display_name
+    - loadbalancer_listner_name
     - loadbalancer_shape
     - loadbalancer_maximum_bandwidth_in_mbps
     - loadbalancer_minimum_bandwidth_in_mbps
-    - loadbalancer_display_name
-    - loadbalancer_listener_port
-    - loadbalancer_listner_name
-    - loadbalancer_backend_port
     - loadbalancer_backend_set_name
     - loadbalancer_backendset_policy
     - loadbalancer_backendset_port
-    - batch_delay_in_seconds
+    - loadbalancer_backend_port
+    - loadbalancer_listener_port
+    - deploy_pipeline_name
+    - deploy_pipeline_description
+    - deploy_stage_display_name
+    - deploy_stage_type
+    - deploy_display_name
+    - deploy_description
+    - deploy_failure_count
+    - deploy_backend_port
+    - deploy_batch_count
+    - deploy_batch_delay_in_seconds
 
-- title: "DevOps Build Pipeline - Canary Approval Stage Configuration"
-  visible: true  
-  variables:
-    - approval_display_name
-    - approval_stage_description
-    - approval_count
-
-- title: "DevOps Build Pipeline - Canary Traffic Shift Stage Configuration"
-  visible: true  
-  variables:
-    - canary_traffic_shift_description
-    - canary_traffic_shift_name
-    - canary_traffic_shift_ramp_limit
-
-- title: "DevOps Build Pipeline - Canary Production Release Stage Configuration"
-  visible: true  
-  variables:
-    - canary_production_description
-    - canary_production_name
 
 - title: "DevOps Instances Environment Configuration"
   visible: true  
   variables:
     - ssh_public_key
-    - instance_os
-    - linux_os_version
-    - compute_instance_prod_name
-    - compute_instance_canary_name
+    - compute_instance_1_name
+    - compute_instance_2_name
     - instance_shape
     - instance_shape_ocpus
     - instance_shape_memory_in_gbs
+    - instance_os
+    - devops_instance_deploy_spec_artifact_name
+    - devops_instance_deploy_spec_path
     - devops_env_prod_displayname
-    - devops_env_canary_displayname
 
 ######################
 # Variable Definitions
@@ -161,7 +199,7 @@ variables:
 
 # Required
 
-  oci_username:
+  oci_user_name:
     type: string
     required: true
     visibile: true
@@ -244,9 +282,6 @@ variables:
         - or:
           - eq:
             - instance_shape 
-            - "VM.Standard.E3.Flex"
-          - eq:
-            - instance_shape 
             - "VM.Standard.E4.Flex"
           - eq:
             - instance_shape 
@@ -260,9 +295,6 @@ variables:
     visible:
       and:
         - or:
-          - eq:
-            - instance_shape 
-            - "VM.Standard.E3.Flex"
           - eq:
             - instance_shape 
             - "VM.Standard.E4.Flex"
@@ -404,23 +436,6 @@ variables:
       and:
         - show_advanced
 
-  approval_count:
-    type: integer
-    minimum: 1
-    maximum: 255
-    title: "Number of Approvals in DevOps Deploy Approval Stage"
-    description: "Number of Approvals in DevOps Deploy Approval Stage"
-
-  approval_display_name:
-    type: string
-    title: "Display Name of Approval in DevOps Deploy Approval Stage"
-    description: "Display Name of Approval in DevOps Deploy Approval Stage"
-
-  approval_stage_description:
-    type: string
-    title: "Description of Approval in DevOps Deploy Approval Stage"
-    description: "Description of Approval in DevOps Deploy Approval Stage"
-
   batch_delay_in_seconds:
     type: integer
     minimum: 1
@@ -428,67 +443,25 @@ variables:
     title: "Batch delay"
     description: "Number of Approvals in DevOps Deploy Approval Stage"
 
-  canary_traffic_shift_description:
+  compute_instance_1_name:
     type: string
-    title: "Description for DevOps Deploy Canary Traffic Shift Stage"
-    description: "Description for DevOps Deploy Canary Traffic Shift Stage"
+    title: "Name for 1st Compute Instance"
+    description: "Name for 1st Compute Instance"
 
-  canary_traffic_shift_name:
+  compute_instance_2_name:
     type: string
-    title: "Name for DevOps Deploy Canary Traffic Shift Stage"
-    description: "Name for DevOps Deploy Canary Traffic Shift Stage"
-
-  canary_traffic_shift_ramp_limit:
-    type: integer
-    minimum: 1
-    maximum: 255
-    title: "Ramp Limit for DevOps Deploy Canary Traffic Shift"
-    description: "Ramp Limit for DevOps Deploy Canary Traffic Shift"    
-
-  canary_production_description:
-    type: string
-    title: "Description for DevOps Deploy Canary Production Release Stage"
-    description: "Description for DevOps Deploy Canary Production Release Stage"
-
-  canary_production_name:
-    type: string
-    title: "Name for DevOps Deploy Canary Production Release Stage"
-    description: "Name for DevOps Deploy Canary Production Release Stage"
-
-  canary_deploy_stage_name:
-    type: string
-    title: "Name for DevOps Deploy Canary Deploy to Instance Stage"
-    description: "Name for DevOps Deploy Canary Deploy to Instance Stage"
-
-  compute_instance_prod_name:
-    type: string
-    title: "Name for Prod Compute Instance"
-    description: "Name for Prod Compute Instance"
-
-  compute_instance_canary_name:
-    type: string
-    title: "Name for Canary Compute Instance"
-    description: "Name for Canary Compute Instance"
+    title: "Name for 2nd Compute Instance"
+    description: "Name for 2nd Compute Instance"
 
   deploy_artifact_version:
     type: string
     title: "DevOps Artifact Version"
     description: "DevOps Artifact Version"
 
-  devops_artifact_name:
-    type: string
-    title: "DevOps Artifact Name"
-    description: "DevOps Artifact Name"
-
   devops_env_prod_displayname:
     type: string
     title: "DevOps Prod Environment Display Name"
     description: "DevOps Prod Environment Display Name"
-
-  devops_env_canary_displayname:
-    type: string
-    title: "DevOps Canary Environment Display Name"
-    description: "DevOps Canary Environment Display Name"
 
   project_description:
     type: string
@@ -591,19 +564,6 @@ variables:
     type: string
     title: "DevOps Deploy Pipeline Description"
     description: "A short description for the DevOps Deploy Pipeline"
-    required: false
-    visible: true
-
-  canary_deploy_stage_description:
-    type: string
-    title: "DevOps Canary Deploy Stage Pipeline Description"
-    description: "A short description for the DevOps Canary Deploy Pipeline"
-    required: false
-    visible: true
-
-  execute_deployment:
-    type: boolean
-    title: "Execure deployment?"
     required: false
     visible: true
 
