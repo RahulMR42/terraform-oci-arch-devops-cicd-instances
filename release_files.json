@@ -32,7 +32,6 @@
       },
       {
         "src_pattern": "userdata/*",
-        "dst_path": "."
       }
     ]
   },
